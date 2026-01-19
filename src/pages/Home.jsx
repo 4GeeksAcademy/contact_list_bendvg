@@ -2,9 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { ContactCard } from "../components/ContactCard";
-
-const apiUrl = import.meta.env.VITE_API_URL;
-const agendaName = import.meta.env.VITE_AGENDA_NAME;
+import { API_URL, AGENDA_NAME } from "../env";
 
 export const Home = () => {
   const [contacts, setContacts] = useState([]);
@@ -14,15 +12,15 @@ export const Home = () => {
   useEffect(() => {
     const loadAgenda = async () => {
       try {
-        let response = await fetch(`${apiUrl}/agendas/${agendaName}`);
+        let response = await fetch(`${API_URL}/agendas/${AGENDA_NAME}`);
 
         if (response.status === 404) {
-          await fetch(`${apiUrl}/agendas/${agendaName}`, { method: "POST" });
-          response = await fetch(`${apiUrl}/agendas/${agendaName}`);
+          await fetch(`${API_URL}/agendas/${AGENDA_NAME}`, { method: "POST" });
+          response = await fetch(`${API_URL}/agendas/${AGENDA_NAME}`);
         }
 
         const data = await response.json();
-        setContacts(data.contacts);
+        setContacts(data.contacts || []);
         dispatch({ type: "SET_AGENDA", payload: data });
       } catch (error) {
         console.error(error);
@@ -51,14 +49,14 @@ export const Home = () => {
               image={contact.image}
               onEdit={() => navigate(`/single/${contact.id}`)}
               onDelete={async () => {
-                await fetch(`${apiUrl}/agendas/${agendaName}/contacts/${contact.id}`, {
+                await fetch(`${API_URL}/agendas/${AGENDA_NAME}/contacts/${contact.id}`, {
                   method: "DELETE"
                 });
 
-                const resp = await fetch(`${apiUrl}/agendas/${agendaName}`);
+                const resp = await fetch(`${API_URL}/agendas/${AGENDA_NAME}`);
                 const agendaData = await resp.json();
                 dispatch({ type: "SET_AGENDA", payload: agendaData });
-                setContacts(agendaData.contacts);
+                setContacts(agendaData.contacts || []);
               }}
             />
           ))

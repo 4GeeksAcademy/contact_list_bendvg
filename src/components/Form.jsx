@@ -7,7 +7,15 @@ export const Form = ({
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (onSubmit) onSubmit();
+
+        const data = {
+            name: e.target.inputName.value,
+            email: e.target.inputEmail.value,
+            phone: e.target.inputPhone.value,
+            address: e.target.inputAddress.value
+        };
+
+        onSubmit(data);
     };
 
     return (
@@ -21,7 +29,7 @@ export const Form = ({
                     className="form-control"
                     id="inputName"
                     defaultValue={initialValues.name}
-                    placeholder={placeholders.name || "Escribe tu nombre"}
+                    placeholder={placeholders.name}
                 />
             </div>
 
@@ -32,7 +40,7 @@ export const Form = ({
                     className="form-control"
                     id="inputEmail"
                     defaultValue={initialValues.email}
-                    placeholder={placeholders.email || "ejemplo@correo.com"}
+                    placeholder={placeholders.email}
                 />
             </div>
 
@@ -43,8 +51,11 @@ export const Form = ({
                     className="form-control"
                     id="inputPhone"
                     defaultValue={initialValues.phone}
-                    placeholder={placeholders.phone || "Número de teléfono"}
+                    placeholder={placeholders.phone}
+                    maxLength={9}
+                    pattern="[0-9]{9}"
                 />
+
             </div>
 
             <div className="mb-3">
@@ -54,7 +65,7 @@ export const Form = ({
                     className="form-control"
                     id="inputAddress"
                     defaultValue={initialValues.address}
-                    placeholder={placeholders.address || "Tu dirección"}
+                    placeholder={placeholders.address}
                 />
             </div>
 
@@ -62,4 +73,3 @@ export const Form = ({
         </form>
     );
 };
-

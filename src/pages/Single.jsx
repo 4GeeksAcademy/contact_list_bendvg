@@ -1,38 +1,70 @@
-// Import necessary hooks and components from react-router-dom and other libraries.
-import { Link, useParams } from "react-router-dom";  // To use link for navigation and useParams to get URL parameters
-import PropTypes from "prop-types";  // To define prop types for this component
-import rigoImageUrl from "../assets/img/rigo-baby.jpg"  // Import an image asset
-import useGlobalReducer from "../hooks/useGlobalReducer";  // Import a custom hook for accessing the global state
+import { useEffect, useState } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import useGlobalReducer from "../hooks/useGlobalReducer";
+import { Form } from "../components/Form";
 
-// Define and export the Single component which displays individual item details.
-export const Single = props => {
-  // Access the global state using the custom hook.
-  const { store } = useGlobalReducer()
+const apiUrl = import.meta.env.VITE_API_URL;
+const agendaName = import.meta.env.VITE_AGENDA_NAME;
 
-  // Retrieve the 'theId' URL parameter using useParams hook.
-  const { theId } = useParams()
-  const singleTodo = store.todos.find(todo => todo.id === parseInt(theId));
+export const Single = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { store, dispatch } = useGlobalReducer();
+
+  const [contact, setContact] = useState(null);
+
+  useEffect(() => {
+    const loadContact = async () => {
+      const resp = await fetch(`${apiUrl}/agendas/${agendaName}`);
+      const data = await resp.json();
+
+      const found = data.contacts.find(c => c.id === parseInt(id));
+      setContact(found);
+    };
+
+    loadContact();
+  }, [id]);
+
+  const handleSubmit = async (data) => {
+    await fetch(`${apiUrl}/agendas/${agendaName}/contacts/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+
+    const resp = await fetch(`${apiUrl}/agendas/${agendaName}`);
+    const agendaData = await resp.json();
+    dispatch({ type: "SET_AGENDA", payload: agendaData });
+
+    navigate("/");
+  };
+
+  if (!contact) return <p>Cargando...</p>;
 
   return (
-    <div className="container text-center">
+    <div className="container">
       <Form
         title="Editar contacto"
         initialValues={{
-          name: "",
-          email: "",
-          phone: "",
-          address: ""
+          name: contact.name,
+          email: contact.email,
+          phone: contact.phone,
+          address: contact.address
         }}
-        onSubmit={() => console.log("Actualizando contacto...")}
+        placeholders={{
+          name: "Nombre completo",
+          email: "Correo personal",
+          phone: "Número móvil",
+          address: "Dirección completa"
+        }}
+        onSubmit={handleSubmit}
       />
 
+      <br />
+
+      <Link to="/">
+        <span className="text-decoration-underline">Back home</span>
+      </Link>
     </div>
   );
-};
-
-// Use PropTypes to validate the props passed to this component, ensuring reliable behavior.
-Single.propTypes = {
-  // Although 'match' prop is defined here, it is not used in the component.
-  // Consider removing or using it as needed.
-  match: PropTypes.object
 };

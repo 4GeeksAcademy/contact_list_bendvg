@@ -1,11 +1,33 @@
-// Import necessary components from react-router-dom and other parts of the application.
-import { Link } from "react-router-dom";
-import useGlobalReducer from "../hooks/useGlobalReducer";  // Custom hook for accessing the global state.
+import { Link, useNavigate } from "react-router-dom";
+import useGlobalReducer from "../hooks/useGlobalReducer";
 import { Form } from "../components/Form";
+
 export const Demo = () => {
-  // Access the global state and dispatch function using the useGlobalReducer hook.
-  const { store, dispatch } = useGlobalReducer()
-  console.log(store);
+  const { dispatch } = useGlobalReducer();
+  const apiUrl = import.meta.env.VITE_API_URL;
+  const agendaName = import.meta.env.VITE_AGENDA_NAME;
+  const navigate = useNavigate();
+
+  const handleSubmit = async (data) => {
+    await fetch(`${apiUrl}/agendas/${agendaName}/contacts`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        address: data.address
+      })
+    });
+
+    const resp = await fetch(`${apiUrl}/agendas/${agendaName}`);
+    const agendaData = await resp.json();
+
+    dispatch({ type: "SET_AGENDA", payload: agendaData });
+
+    navigate("/");
+  };
+
   return (
     <div className="container">
       <Form
@@ -16,14 +38,13 @@ export const Demo = () => {
           phone: "Número móvil",
           address: "Dirección completa"
         }}
-        onSubmit={() => console.log("Creando contacto...")}
+        onSubmit={handleSubmit}
       />
-    
 
       <br />
 
       <Link to="/">
-        <span className="text-decoration-underline"> Back home </span>
+        <span className="text-decoration-underline">Back home</span>
       </Link>
     </div>
   );
